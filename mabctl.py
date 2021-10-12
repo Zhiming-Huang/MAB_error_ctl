@@ -10,7 +10,7 @@ class MAB_Control():
 
 
     def ucb(self):
-        return self.q_hat + (2*(1+self.packetno*math.log(self.packetno)**2)/self.packetno)
+        return self.q_hat + (2*(1+self.packetno*math.log(self.packetno)**2)/self.packetno)**0.5
 
     def err_gran(self,loss=False):
         if loss:
