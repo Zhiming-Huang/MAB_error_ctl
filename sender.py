@@ -3,7 +3,7 @@ import mabctl
 import sys
 import random
 import time
-import scipy.io as scio
+#import scipy.io as scio
 #import numpy as np
 #python3 sender.py receiver_ip receriver_port tolarated_loss packet_number
 
@@ -26,11 +26,11 @@ UDPClientSocket.settimeout(0.02)
 # initiate the MAB module
 MAB_err_ctl = mabctl.MAB_Control(tolated_loss)
 
-for i in range(1000):
+for i in range(packet_number):
 
 	initial_time = time.time()
 
-	UDPClientSocket.sendto(i, serverAddressPort)
+	UDPClientSocket.sendto(str(i).encode(), serverAddressPort)
 
 	while True:
 
@@ -45,13 +45,13 @@ for i in range(1000):
 				p_retransmit  = MAB_err_ctl.err_gran(True)
 
 				if random.uniform(0,1) < p:
-					UDPClientSocket.sendto(i, serverAddressPort)
+					UDPClientSocket.sendto(str(i).encode(), serverAddressPort)
 
 				else:
 					break
 
 		else:
-			ending_time_time = time.time()
+			ending_time = time.time()
 			MAB_err_ctl.err_gran(False)
 			elapsed_time = ending_time - initial_time
 			packet_delay[i] = elapsed_time
@@ -62,4 +62,4 @@ for i in range(1000):
 
 UDPClientSocket.close()
 
-scio.savemat(newmatfile,{"mabdelay":packet_delay})
+#scio.savemat(newmatfile,{"mabdelay":packet_delay})
