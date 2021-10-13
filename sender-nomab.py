@@ -24,7 +24,7 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 UDPClientSocket.settimeout(0.25)
 
 # initiate the MAB module
-MAB_err_ctl = mabctl.MAB_Control(tolated_loss)
+#MAB_err_ctl = mabctl.MAB_Control(tolated_loss)
 
 for i in range(packet_number):
 
@@ -42,18 +42,14 @@ for i in range(packet_number):
 
 		except socket.timeout:
 
-				p_retransmit  = MAB_err_ctl.err_gran(True)
+				#p_retransmit  = MAB_err_ctl.err_gran(True)
 
-				if random.uniform(0,1) < p_retransmit:
-					
-					UDPClientSocket.sendto(str(i).encode(), serverAddressPort)
+				UDPClientSocket.sendto(str(i).encode(), serverAddressPort)
 
-				else:
-					break
 
 		else:
 			ending_time = time.time()
-			MAB_err_ctl.err_gran(False)
+			#MAB_err_ctl.err_gran(False)
 			elapsed_time = ending_time - initial_time
 			packet_delay[i] = elapsed_time
 			break
