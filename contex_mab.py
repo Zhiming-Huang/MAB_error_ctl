@@ -20,7 +20,8 @@ class MAB_Control():
         self.c9_count = [1/2,1/2,0,0]
         self.action = 0
         self.count = []
-        self.packetno = {self.c1_count:1,self.c2_count:1,self.c3_count:1,self.c4_count:1,self.c5_count:1, self.c6_count:1, self.c7_count:1, self.c8_count:1}
+        self.type = 1
+        self.packetno = {1:1, 2:1, 3:1, 4:1, 5:1, 6:1, 7:1, 8:1, 9:1}
 
 
     def update_rtt(self,rtt):
@@ -47,23 +48,32 @@ class MAB_Control():
         if self.delayReq <= 1.5*self.rtt:
             if self.packet_imp == -1 and self.seg_buffer == 0:
                 self.count = self.c1_count
+                self.type = 1
             if self.packet_imp == 1 and self.seg_buffer == 0:
                 self.count = self.c2_count
+                self.type = 2
             if self.packet_imp == -1 and self.seg_buffer >0:
                 self.count = self.c5_count
+                self.type = 5
             if self.packet_imp == 1 and self.seg_buffer >0:
                 self.count = self.c6_count
+                self.type = 6
         if self.delayReq > 1.5*self.rtt:
             if self.packet_imp == -1 and self.seg_buffer <= 0:
                 self.count = self.c3_count
+                self.type = 3
             if self.packet_imp == 1 and self.seg_buffer <= 0:
                 self.count = self.c4_count
+                self.type = 4
             if self.packet_imp == -1 and self.seg_buffer >0:
                 self.count = self.c7_count
+                self.type = 7
             if self.snd_wnd <= 1:
                 self.count = self.c9_count
+                self.type = 9
             if self.packet_imp == 1 and self.seg_buffer >0:
                 self.count = self.c8_count
+                self.type = 8
 
     def exp3_action(self):
         self._detcontype()
@@ -80,7 +90,7 @@ class MAB_Control():
     def exp3_udate(self,reward):
         num_action = len(self.count)/2
         loss_sum = 0
-        eta = math.log(num_action)/(num_action*self.packetno[self.count])
+        eta = math.log(num_action)/(num_action*self.packetno[self.type])
         for i in range(num_action):
             if i == self.action:
                 self.count[num_action + i] += (1-reward)/(self.count[self.action]+eta/2)
@@ -88,7 +98,7 @@ class MAB_Control():
             loss_sum +=  self.count[i]
         for i in range(num_action):
             self.count[i] = self.count[i]/loss_sum
-        self.packetno[self.count] += 1
+        self.packetno[self.type] += 1
 
         
 

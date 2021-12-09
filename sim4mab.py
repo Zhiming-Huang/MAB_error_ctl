@@ -20,7 +20,7 @@ num_seg = 5000
 
 # A basic-layer segment follows by a enhancement-layer segment
 packet_imp = 1
-delay_req_perseg = 120
+delay_req_perseg = 150
 # Assume every 200ms, two segment (i.e., basic and enhancement) with 200ms content is generated
 # and the delay requirement for this segment is 120 ms for each segment
 # the maximum snd_wnd is 2, i.e., at most two segments can be sent at a time
@@ -38,17 +38,23 @@ segment_spawn[0] = 0
 seg_buffer = np.cumsum(segment_spawn)
 #Context: (delay_req, seg_importance, seg_sndbuffer, seg_bitrate, snd_wnd)
 
-
+delay_packet = np.zeros(2*num_seg)
+reward = np.zeros(2*num_seg)
+packet_receipt = np.zeros(2*num_seq)
 for i in range(num_seg):
     
     rtt =  np.random.uniform(140,160,num_seg)
-    mabctl.update_rtt(update_rtt)
+    mabctl.update_rtt(rtt)
     #observe context
     seg_buffer = np.where(seg_buffer<t)[0].size() - i
     delayReq = seq_buffer[i] + delay_req_perseg - t
+    if delayReq <= 0:
+        reward[2*i] = 0
+        reward[2*i+1] = 0
     mabctl.input_context(delayReq, packet_imp, seg_buffer, snd_wnd)
     packet_imp = -packet_imp
     action1 = mabctl.exp3_action()
     if action1 == 0:
-        delay = np.random.geometric(1-drp_rate)
+        delay1 = rtt*np.random.geometric(1-drp_rate)
+        if 
         
