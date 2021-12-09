@@ -40,10 +40,11 @@ seg_buffer = np.cumsum(segment_spawn)
 
 
 for i in range(num_seg):
+    
     rtt =  np.random.uniform(140,160,num_seg)
     mabctl.update_rtt(update_rtt)
     #observe context
-    seg_buffer -= 2
+    seg_buffer = np.where(seg_buffer<t)[0].size() - i
     delayReq = 
     mabctl.input_context(delayReq, packet_imp, seg_buffer, snd_wnd)
     packet_imp = -packet_imp
