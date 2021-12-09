@@ -100,6 +100,8 @@ class MAB_Control():
         for i in range(int(num_action)):
             if i == self.action:
                 self.count[int(num_action) + i] += (1-reward)/(self.count[self.action]+eta/2)
+            else:
+                self.count[int(num_action) + i] += 1
             self.count[i] = math.exp(-eta*self.count[int(num_action)+i])
             loss_sum +=  self.count[i]
         for i in range(int(num_action)):
