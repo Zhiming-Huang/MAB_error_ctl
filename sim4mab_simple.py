@@ -20,7 +20,7 @@ num_seg = 10000
 
 # A basic-layer segment follows by a enhancement-layer segment
 packet_imp = 1
-delay_req_perseg = 150
+delay_req_perseg = 200
 # Assume every 200ms, two segment (i.e., basic and enhancement) with 200ms content is generated
 # and the delay requirement for this segment is 120 ms for each segment
 # the maximum snd_wnd is 2, i.e., at most two segments can be sent at a time
@@ -64,10 +64,10 @@ def reward_observed(action,rtt,drp_rate,delayReq,packet_imp):
         delay = 0 if packet_imp == 1 else 0
     return reward, delay, ifdrop
 
-actions = np.zeros(2*num_seg)
-delay_packet = np.zeros(2*num_seg)
-reward = np.zeros(2*num_seg)
-packet_receipt = np.zeros(2*num_seg)
+actions = np.zeros(num_seg)
+delay_packet = np.zeros(num_seg)
+reward = np.zeros(num_seg)
+packet_receipt = np.zeros(num_seg)
 for i in range(num_seg):
     snd_wnd = 2
     rtt =  np.random.uniform(140,160,1)
@@ -81,41 +81,17 @@ for i in range(num_seg):
         continue
     mabctl.input_context(delayReq, packet_imp, seg_buffer, snd_wnd)
     action1 = mabctl.exp3_action()
-    actions[2*i] = action1
-    packet_imp = -packet_imp
-    if action1 == 0: #the base-layer packe is not transmitted in an FEC way
-        snd_wnd = 1
-        mabctl.input_context(delayReq, packet_imp, seg_buffer, snd_wnd)
-        action2 = mabctl.exp3_action()
-        reward2, delay2, ifdrop2 = reward_observed(action1,rtt,drp_rate,delayReq,packet_imp)
+    actions[i] = action1
     reward1, delay1, ifdrop1 = reward_observed(action1,rtt,drp_rate,delayReq,packet_imp)
     mabctl.exp3_udate(reward1)
-    reward[2*i] = reward1
-    packet_receipt[2*i] = 1 if not ifdrop1 else 0
-    delay_packet[2*i] = delay1
-    if action1 == 1:
-        if not ifdrop1:
-            delayReq = seg_spawn_time[i] + delay_req_perseg - (t+delay1)
-            if delayReq <= 0:
-                continue
-            mabctl.input_context(delayReq, packet_imp, seg_buffer, snd_wnd)
-            action2 = mabctl.exp3_action()
-            actions[2*i+1] = action2
-            reward2, delay2, ifdrop2 = reward_observed(action1,rtt,drp_rate,delayReq,packet_imp)
-            mabctl.exp3_udate(reward1)
-        else:
-            delay2 = 0
-    elif action1 == 2:
-        delay2 = 0
-    t += max(delay1, delay2)
+    reward[i] = reward1
+    packet_receipt[i] = 1 if not ifdrop1 else 0
+    delay_packet[i] = delay1
 
-
+            
 reward_cum = np.cumsum(reward)
 for i in range(len(reward_cum)):
     reward_cum[i] = reward_cum[i]/(i+1)
-            
-            
-            
-
+plt.plot(reward_cum)
         
         
