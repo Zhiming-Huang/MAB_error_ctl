@@ -71,7 +71,7 @@ reward_arq = np.zeros(num_seg)
 reward_fec = np.zeros(num_seg)
 packet_receipt = np.zeros(num_seg)
 for i in range(num_seg):
-    snd_wnd = 2
+    snd_wnd = 2 
     rtt =  RTT[i]
     retrxsfori = retrxs[i]
     fecscssfori = fecscss[i]

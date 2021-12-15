@@ -85,23 +85,22 @@ class MAB_Control():
             if rndnum <= cumsum:
                 self.action = i
                 break
-        if self.type == 9:
-            if self.action == 1:
-                return 2
+        if self.type == 9 and self.action == 1:
+            return 2
         return self.action
-            #0 for retransmission, 1 for FEC, and 2 for drop 
+            #0 for retransmission, 1 for FEC, and 2 for drop
             #for type 9, 0 for retransmission, 2 for drop
 
 
     def exp3_udate(self,reward):
         num_action = len(self.count)/2
         loss_sum = 0
-        eta = math.log(num_action)/(num_action*self.packetno[self.type])
+        eta = math.sqrt(math.log(num_action)/(num_action*self.packetno[self.type]))
         for i in range(int(num_action)):
             if i == self.action:
                 self.count[int(num_action) + i] += (1-reward)/(self.count[self.action]+eta/2)
             else:
-                self.count[int(num_action) + i] += 1
+                self.count[int(num_action) + i] += 0
             self.count[i] = math.exp(-eta*self.count[int(num_action)+i])
             loss_sum +=  self.count[i]
         for i in range(int(num_action)):
