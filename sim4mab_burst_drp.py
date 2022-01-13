@@ -72,14 +72,10 @@ def reward_observed(action,rtt,delayReq,packet_imp,retrxsfori,fecscssfori):
             ifdrop = True
         else:
             reward = 1
-    elif action == 2: #drop
-        delay = 0
-        ifdrop = True
-        reward = 0.1 if packet_imp != 1 else 0
     else:
         ifdrop = True
         reward = 0
-        delay = 0 if packet_imp == 1 else 0
+        delay = 0 if packet_imp == 1 else 0.1
     return reward, delay, ifdrop
 
 actions = np.zeros(num_seg)
