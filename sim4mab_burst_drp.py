@@ -10,14 +10,25 @@ import contex_mab
 import numpy as np
 
 
-drp_rate = 0.05
+#drp_rate = 
+
+
 
 #RTT =  150 assume one trip time is 75ms, and round trip time is 150ms
 num_seg = 100000
 
+#generate burst drop rate
+drp_rate = np.zeros(num_seg)
+drp_rate = drp_rate + 0.05
+
+ind = 10000
+for i in range(1,10):
+    drp_rate[ind*i:ind*i+2000] = drp_rate[ind*i:ind*i+2000] + 0.15
+        
+
 RTT =  np.random.uniform(50,70,num_seg)
-retrxs = np.random.geometric(1-drp_rate,num_seg)
-fecscss = np.random.binomial(2,1-drp_rate,num_seg)
+retrxs = np.random.geometric(1-drp_rate)
+fecscss = np.random.binomial(2,1-drp_rate)
 # A basic-layer segment follows by a enhancement-layer segment
 packet_imp = 1
 
@@ -61,6 +72,10 @@ def reward_observed(action,rtt,delayReq,packet_imp,retrxsfori,fecscssfori):
             ifdrop = True
         else:
             reward = 1
+    elif action == 2: #drop
+        delay = 0
+        ifdrop = True
+        reward = 0.1 if packet_imp != 1 else 0
     else:
         ifdrop = True
         reward = 0
@@ -76,6 +91,7 @@ packet_receipt = np.zeros(num_seg)
 
 
 for i in range(num_seg):
+    packet_imp = 1 if i%30==1 else -1
     #1 mab process
     #if t > seg_spawn_time[i] + delay_req_perseg:
     #    reward[i] = 0
