@@ -130,11 +130,11 @@ for i in range(num_seg):
     else:
         if seg_spawn_time[i] > t1[i]:
             t1[i] = seg_spawn_time[i]
-        delayReq2 = seg_spawn_time[i] + delay_req_perseg - t1[i]
-        reward2, delay2, ifdrop2 = reward_observed(0,rtt,delayReq2,packet_imp,retrxsfori,fecscssfori)
-        reward_arq[i] = reward2
-        delay_packet1[i] = delay2
-        t1[i] = t1[i] + delay2
+    delayReq2 = seg_spawn_time[i] + delay_req_perseg - t1[i]
+    reward2, delay2, ifdrop2 = reward_observed(0,rtt,delayReq2,packet_imp,retrxsfori,fecscssfori)
+    reward_arq[i] = reward2
+    delay_packet1[i] = delay2
+    t1[i] = t1[i] + delay2
         
             
     #3 fec process        
@@ -143,11 +143,11 @@ for i in range(num_seg):
     else:
         if seg_spawn_time[i] > t2[i]:
             t2[i] = seg_spawn_time[i]
-        delayReq3 = seg_spawn_time[i] + delay_req_perseg - t2[i]
-        reward3, delay3, ifdrop3 = reward_observed(1,rtt,delayReq3,packet_imp,retrxsfori,fecscssfori)
-        reward_fec[i] = reward3
-        delay_packet2[i] = delay3
-        t2[i] = t2[i] + delay3
+    delayReq3 = seg_spawn_time[i] + delay_req_perseg - t2[i]
+    reward3, delay3, ifdrop3 = reward_observed(1,rtt,delayReq3,packet_imp,retrxsfori,fecscssfori)
+    reward_fec[i] = reward3
+    delay_packet2[i] = delay3
+    t2[i] = t2[i] + delay3
 
 
 
@@ -168,6 +168,7 @@ for i in range(len(reward_cum)):
     delay_cum[i] = delay_cum[i]/(i+1)
     delay1_cum[i] = delay1_cum[i]/(i+1)
     delay2_cum[i] = delay2_cum[i]/(i+1)
-#plt.ylim([0.99,1])
+
 plt.plot(reward_cum,'r',reward_cum_arq,'b', reward_cum_fec,'g')
-plt.plot(delay_cum,'r',delay1_cum,'b', delay2_cum,'g')
+plt.ylim([0.95,1])
+#plt.plot(delay_cum,'r',delay1_cum,'b', delay2_cum,'g')

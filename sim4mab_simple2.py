@@ -25,6 +25,10 @@ num_seg = 100000
 RTT =  np.random.uniform(50,70,num_seg)
 retrxs = np.random.geometric(1-drp_rate,num_seg)
 fecscss = np.random.binomial(2,1-drp_rate,num_seg)
+
+
+
+
 # A basic-layer segment follows by a enhancement-layer segment
 packet_imp = 1
 delay_req_perseg = 180
