@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Mar 28 22:14:00 2022
+
+@author: Zhiming
+"""
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -98,7 +105,26 @@ packet_receipt = np.zeros(num_seg)
 packet1_receipt = np.zeros(num_seg)
 packet2_receipt = np.zeros(num_seg)
 
-
+i = 0
+t = 0
+while True:
+    seg_buffer = np.where(seg_spawn_time<=t)[0]
+    for item in seg_buffer:
+        time_elapse = 0
+        if item == i + snd_wnd:
+            break
+        rtt =  RTT[item]
+        retrxsfori = retrxs[item]
+        delayReq = seg_spawn_time[item] + delay_req_perseg - t
+        delay = rtt*retrxsfori - rtt/2
+        delay_packet[item] = delay
+        if delay > delayReq:
+            reward_arq[item] = 0
+        else:
+            reward_arq[item] = 1
+        
+    
+    
 
 for i in range(num_seg):
     packet_imp = frametype(i+1)

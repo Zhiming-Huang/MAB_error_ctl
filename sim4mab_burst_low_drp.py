@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Mar 27 21:25:14 2022
+
+@author: Zhiming
+"""
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -10,11 +17,7 @@ import contex_mab
 import numpy as np
 
 
-tracefile = open("starwars.frames.old","r+")
-traces = tracefile.read().splitlines()
-traces = np.array(list(map(int,traces)))
-
-
+#drp_rate = 
 def frametype(frm_num):
     # 1 for I, 2 for B, and P for 3
     ret = frm_num % 12
@@ -24,13 +27,6 @@ def frametype(frm_num):
         return 2
     else:
         return 3
-
-
-
-accumu_packets = np.cumsum([int(item/1024) for item in traces])
-
-
-#drp_rate = 
 
 
 
@@ -45,7 +41,7 @@ ind = 10000
 for i in range(2,num_seg):
     drp_rate[i] = 0.25*drp_rate[i-1]+np.random.uniform(0,0.05)*0.75
     
-
+        
 
 RTT =  np.random.uniform(100,180,num_seg)
 retrxs = np.random.geometric(1-drp_rate)
@@ -53,29 +49,28 @@ fecscss = np.random.binomial(2,1-drp_rate)
 # A basic-layer segment follows by a enhancement-layer segment
 packet_imp = 1
 
-delay_req_perseg = 180
-
+delay_req_perseg = 300
 # Assume each segment contains 6 frames, i.e., 1 segment per 100 ms
 # and the delay requirement for this segment is 150 ms for each segment
-# the maximum snd_wnd is 2, i.e., at most two packets can be sent at a time
-snd_wnd = 5
+# the maximum snd_wnd is 2, i.e., at most two segments can be sent at a time
+snd_wnd = 2
 
 mabctl = contex_mab.MAB_Control()
 
 # Initially, we have two segments already generated
-seg_buffer = 9
+seg_buffer = 2
 
 t = np.zeros(num_seg)  #for tracking the time of mab
 t1 = np.zeros(num_seg) #for tracking the time of arq
 t2 = np.zeros(num_seg) #for tracking the time of fec
 
-segment_spawn = np.zeros(num_seg) + 42
+segment_spawn = np.zeros(num_seg) +  42
 segment_spawn[0] = 0
 seg_spawn_time = np.cumsum(segment_spawn)
 #Context: (delay_req, seg_importance, seg_sndbuffer, seg_bitrate, snd_wnd)
 
 
-def reward_observed(action,rtt,delayReq,packet_imp,retrxsfori,fecscssfori,snd_wnd):
+def reward_observed(action,rtt,delayReq,packet_imp,retrxsfori,fecscssfori):
     reward = 0
     delay = 0
     ifdrop = False
@@ -93,17 +88,12 @@ def reward_observed(action,rtt,delayReq,packet_imp,retrxsfori,fecscssfori,snd_wn
             reward = 0
             ifdrop = True
         else:
-            reward = 0.8
+            reward = 1
     else:
         ifdrop = True
         reward = 0
         delay = 0 if packet_imp == 1 else 0.1
     return reward, delay, ifdrop
-
-
-
-
-
 
 actions = np.zeros(num_seg)
 delay_packet = np.zeros(num_seg)
@@ -115,17 +105,14 @@ reward_fec = np.zeros(num_seg)
 packet_receipt = np.zeros(num_seg)
 
 
-i = 0
-while True:
-    if i >= num_seg:
-        break
+for i in range(num_seg):
     packet_imp = frametype(i)
     #1 mab process
     #if t > seg_spawn_time[i] + delay_req_perseg:
     #    reward[i] = 0
     #    packet_receipt[i] = 0
     #    continue
-    snd_wnd = 5
+    snd_wnd = 2 
     rtt =  RTT[i]
     retrxsfori = retrxs[i]
     fecscssfori = fecscss[i]
@@ -136,14 +123,14 @@ while True:
         t[i]=t[i-1]
         t1[i] = t1[i-1]
         t2[i] = t2[i-1]
-    if seg_spawn_time[i] > t[i]: #if the seg_buf is empty
+    if seg_spawn_time[i] > t[i]: #the seg_buf is empty
         t[i] = seg_spawn_time[i]
     delayReq = seg_spawn_time[i] + delay_req_perseg - t[i]
     if delayReq >= 0:
         mabctl.input_context(delayReq, packet_imp, seg_buffer, snd_wnd)
         action1 = mabctl.exp3_action()
         actions[i] = action1
-        reward1, delay1, ifdrop1 = reward_observed(action1,rtt,delayReq,packet_imp,retrxsfori,fecscssfori,snd_wnd)
+        reward1, delay1, ifdrop1 = reward_observed(action1,rtt,delayReq,packet_imp,retrxsfori,fecscssfori)
         mabctl.exp3_udate(reward1)
         reward[i] = reward1
         packet_receipt[i] = 1 if not ifdrop1 else 0 #records whether or not packet i is received
@@ -152,7 +139,7 @@ while True:
     else:
         packet_receipt[i] = 0
         reward[i] = 0
-    t = t + delay1 #update the current time
+    #t = t + delay1 #update the current time
     #2 arq process
     if t1[i] > seg_spawn_time[i] + delay_req_perseg:
         reward_arq[i] = 0
@@ -160,7 +147,7 @@ while True:
         if seg_spawn_time[i] > t1[i]:
             t1[i] = seg_spawn_time[i]
     delayReq2 = seg_spawn_time[i] + delay_req_perseg - t1[i]
-    reward2, delay2, ifdrop2 = reward_observed(0,rtt,delayReq2,packet_imp,retrxsfori,fecscssfori,snd_wnd)
+    reward2, delay2, ifdrop2 = reward_observed(0,rtt,delayReq2,packet_imp,retrxsfori,fecscssfori)
     reward_arq[i] = reward2
     delay_packet1[i] = delay2
     t1[i] = t1[i] + delay2
@@ -173,12 +160,10 @@ while True:
         if seg_spawn_time[i] > t2[i]:
             t2[i] = seg_spawn_time[i]
     delayReq3 = seg_spawn_time[i] + delay_req_perseg - t2[i]
-    reward3, delay3, ifdrop3 = reward_observed(1,rtt,delayReq3,packet_imp,retrxsfori,fecscssfori,snd_wnd)
+    reward3, delay3, ifdrop3 = reward_observed(1,rtt,delayReq3,packet_imp,retrxsfori,fecscssfori)
     reward_fec[i] = reward3
     delay_packet2[i] = delay3
     t2[i] = t2[i] + delay3
-    
-    i = i + 1
 
 
 
