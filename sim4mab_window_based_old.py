@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 28 22:14:00 2022
+Created on Wed Dec  8 13:38:00 2021
 
-@author: Zhiming
+@author: zhiming
 """
 import matplotlib.pyplot as plt
 import contex_mab
@@ -51,7 +52,6 @@ t = 0
 segment_spawn = np.zeros(num_seg) + 100
 segment_spawn[0] = 0
 seg_spawn_time = np.cumsum(segment_spawn)
-
 # Context: (delay_req, seg_importance, seg_sndbuffer, seg_bitrate, snd_wnd)
 
 
@@ -101,150 +101,79 @@ packet_receipt = np.zeros(num_seg)
 packet1_receipt = np.zeros(num_seg)
 packet2_receipt = np.zeros(num_seg)
 
-# ARQ
-i = 0
-t = 0
-while i != num_seg:
-    seg_buffer = np.where(seg_spawn_time <= t)[0]
-    time_elapse = 0
-    delay_list = []
-    if seg_buffer.size < i + 1:
-        t = seg_spawn_time[seg_buffer[-1] + 1]
-        continue
-    i_next = i
-    for item in seg_buffer[i:]:
-        if item == i + snd_wnd:
-            break
-        rtt = RTT[item]
-        retrxsfori = retrxs[item]
-        delayReq = seg_spawn_time[item] + delay_req_perseg - t
-        delay = rtt * retrxsfori - rtt / 2
-        delay_list.append(delay)
-        delay_packet1[item] = delay
-        if delay > delayReq:
-            reward_arq[item] = 0
-        else:
-            reward_arq[item] = 1
-        if time_elapse <= delay + rtt / 2:
-            time_elapse = delay + rtt / 2
-        i_next = item + 1
-    while i_next <= i + snd_wnd - 1:
-        middle_time = t + min(delay_list)
-        if seg_spawn_time[i_next] > middle_time:
-            break
-        rtt = RTT[i_next]
-        retrxsfori = retrxs[i_next]
-        delayReq = seg_spawn_time[i_next] + delay_req_perseg - t
-        delay = rtt * retrxsfori - rtt / 2
-        if delay > delayReq:
-            reward_arq[item] = 0
-        else:
-            reward_arq[item] = 1
-        if time_elapse <= min(delay_list) + rtt / 2:
-            time_elapse = min(delay_list) + rtt / 2
-        i_next = i_next + 1
-
-    i = i_next
-    t = t + time_elapse
-
-
-# # FEC
+# i = 0
 # t = 0
-# rtt = 0
-# seg_rtt_time = []
-# for i in range(num_seg):
-#     if seg_spawn_time[i] <= t + rtt / 2:
-#         if snd_wnd > 0:
-#             rtt = RTT[i]
-#             seg_rtt_time.append(rtt)
-#             retrxsfori = retrxs[i]
-#             delayReq = seg_spawn_time[i] + delay_req_perseg - t
-#             delay = rtt * retrxsfori - rtt / 2
-#             delay_packet1[item] = delay
-#             if delay > delayReq:
-#                 reward_arq[item] = 0
-#             else:
-#                 reward_arq[item] = 1
-#             snd_wnd -= 1
+# while True:
+#     seg_buffer = np.where(seg_spawn_time <= t)[0]
+#     for item in seg_buffer:
+#         time_elapse = 0
+#         if item == i + snd_wnd:
+#             break
+#         rtt = RTT[item]
+#         retrxsfori = retrxs[item]
+#         delayReq = seg_spawn_time[item] + delay_req_perseg - t
+#         delay = rtt * retrxsfori - rtt / 2
+#         delay_packet[item] = delay
+#         if delay > delayReq:
+#             reward_arq[item] = 0
+#         else:
+#             reward_arq[item] = 1
 
 
-# FEC
-t = 0
 for i in range(num_seg):
+    packet_imp = frametype(i + 1)
+    rtt = RTT[i]
+    retrxsfori = retrxs[i]
+    fecscssfori = fecscss[i]
+    mabctl.update_rtt(rtt)
+    # observe context
+    seg_buffer = np.where(seg_spawn_time < t)[0].size - i
     if seg_spawn_time[i] > t:
         t = seg_spawn_time[i]
-    rtt = RTT[i]
     delayReq = seg_spawn_time[i] + delay_req_perseg - t
-    delay_packet2[i] = rtt / 2
-    fecscssfori = fecscss[i]
-    if fecscssfori == 0:
-        reward_fec[i] = 0
-        ifdrop = True
-    else:
-        reward_fec[i] = 1
-    t = t + rtt
-
-
-# MAB
-i = 0
-t = 0
-while i != num_seg:
-    seg_buffer = np.where(seg_spawn_time <= t)[0]
-    time_elapse = 0
-    if seg_buffer.size < i + 1:
-        t = seg_spawn_time[seg_buffer[-1] + 1]
+    if delayReq <= 0:
+        print("here")
         continue
-    i_next = i
-    for item in seg_buffer[i:]:
-        if item == i + snd_wnd:
-            break
-        packet_imp = frametype(item + 1)
-        rtt = RTT[item]
-        retrxsfori = retrxs[item]
-        delayReq = seg_spawn_time[item] + delay_req_perseg - t
+    mabctl.input_context(delayReq, packet_imp, seg_buffer, snd_wnd)
+    action1 = mabctl.exp3_action()
+    actions[i] = action1
+    reward1, delay1, ifdrop1 = reward_observed(
+        action1, rtt, drp_rate, delayReq, packet_imp, retrxsfori, fecscssfori
+    )
+    delay_packet[i] = delay1
+    mabctl.exp3_udate(reward1)
+    reward[i] = reward1
+    packet_receipt[i] = 1 if not ifdrop1 else 0
+    t = t + rtt / 2
+
+    if action1 == 0:
+        reward_arq[i] = reward1
+        delay_packet1[i] = delay1
+        packet1_receipt[i] = 1 if not ifdrop1 else 0
+
+    else:
         delay = rtt * retrxsfori - rtt / 2
-        delay_packet1[item] = delay
-        mabctl.input_context(delayReq, packet_imp, seg_buffer[item:].size, snd_wnd)
-        action1 = mabctl.exp3_action()
-        reward1, delay1, ifdrop = reward_observed(
-            action1, rtt, drp_rate, delayReq, packet_imp, retrxsfori, fecscssfori
-        )
-        reward[item] = reward1
-        delay_packet[item] = delay1
+        delay_packet1[i] = delay
+        if delay > delayReq:
+            reward_arq[i] = 0
 
-        if time_elapse <= delay1 + rtt / 2:
-            time_elapse = delay1 + rtt / 2
+        else:
+            reward_arq[i] = 1
+            packet1_receipt[i] = 1
 
-        i_next = item + 1
+    if action1 == 1:
+        reward_fec[i] = reward1
+        delay_packet2[i] = rtt / 2
+        packet2_receipt[i] = 1 if not ifdrop1 else 0
 
-    i = i_next
-    t = t + time_elapse
+    else:
+        delay_packet2[i] = rtt / 2
+        if fecscssfori == 0:
 
-# for i in range(num_seg):
-#     packet_imp = frametype(i + 1)
-#     rtt = RTT[i]
-#     retrxsfori = retrxs[i]
-#     fecscssfori = fecscss[i]
-#     mabctl.update_rtt(rtt)
-#     # observe context
-#     seg_buffer = np.where(seg_spawn_time < t)[0].size - i
-#     if seg_spawn_time[i] > t:
-#         t = seg_spawn_time[i]
-#     delayReq = seg_spawn_time[i] + delay_req_perseg - t
-#     if delayReq <= 0:
-#         print("here")
-#         continue
-#     mabctl.input_context(delayReq, packet_imp, seg_buffer, snd_wnd)
-#     action1 = mabctl.exp3_action()
-#     actions[i] = action1
-#     reward1, delay1, ifdrop1 = reward_observed(
-#         action1, rtt, drp_rate, delayReq, packet_imp, retrxsfori, fecscssfori
-#     )
-#     delay_packet[i] = delay1
-#     mabctl.exp3_udate(reward1)
-#     reward[i] = reward1
-#     packet_receipt[i] = 1 if not ifdrop1 else 0
-#     t = t + rtt / 2
+            reward_fec[i] = 0
+        else:
+            reward_fec[i] = 1
+            packet2_receipt[i] = 1
 
 
 reward_cum = np.cumsum(reward)
