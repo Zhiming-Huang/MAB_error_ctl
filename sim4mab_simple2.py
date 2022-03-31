@@ -22,9 +22,13 @@ drp_rate = 0.05
 #RTT =  150 assume one trip time is 75ms, and round trip time is 150ms
 num_seg = 100000
 
-RTT =  np.random.uniform(50,70,num_seg)
+RTT =  np.random.uniform(100,180,num_seg)
 retrxs = np.random.geometric(1-drp_rate,num_seg)
 fecscss = np.random.binomial(2,1-drp_rate,num_seg)
+
+
+
+
 # A basic-layer segment follows by a enhancement-layer segment
 packet_imp = 1
 delay_req_perseg = 180
@@ -77,8 +81,9 @@ reward = np.zeros(num_seg)
 reward_arq = np.zeros(num_seg)
 reward_fec = np.zeros(num_seg)
 packet_receipt = np.zeros(num_seg)
+
 for i in range(num_seg):
-    snd_wnd = 2 
+    snd_wnd = 5
     rtt =  RTT[i]
     retrxsfori = retrxs[i]
     fecscssfori = fecscss[i]

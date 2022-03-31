@@ -46,26 +46,26 @@ class MAB_Control():
 #type 7: delay > 1.5 rtt, seg_buffer > 0, packet_importance = 0
 #type 8: delay > 1.5 rtt, seg_buffer > 0, packet_importance = 1
         if self.delayReq <= 1.5*self.rtt:
-            if self.packet_imp == -1 and self.seg_buffer == 0:
+            if self.packet_imp != 1 and self.seg_buffer == 0:
                 self.count = self.c1_count
                 self.type = 1
             if self.packet_imp == 1 and self.seg_buffer == 0:
                 self.count = self.c2_count
                 self.type = 2
-            if self.packet_imp == -1 and self.seg_buffer >0:
+            if self.packet_imp != 1 and self.seg_buffer >0:
                 self.count = self.c5_count
                 self.type = 5
             if self.packet_imp == 1 and self.seg_buffer >0:
                 self.count = self.c6_count
                 self.type = 6
         if self.delayReq > 1.5*self.rtt:
-            if self.packet_imp == -1 and self.seg_buffer <= 0:
+            if self.packet_imp != 1 and self.seg_buffer <= 0:
                 self.count = self.c3_count
                 self.type = 3
             if self.packet_imp == 1 and self.seg_buffer <= 0:
                 self.count = self.c4_count
                 self.type = 4
-            if self.packet_imp == -1 and self.seg_buffer >0:
+            if self.packet_imp != 1 and self.seg_buffer >0:
                 self.count = self.c7_count
                 self.type = 7
             if self.snd_wnd <= 1:
