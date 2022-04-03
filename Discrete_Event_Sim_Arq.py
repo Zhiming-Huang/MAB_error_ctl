@@ -8,6 +8,7 @@ Created on Fri Apr  1 15:25:37 2022
 
 import queue
 import numpy as np
+import pybst
 
 #read the tracefile
 tracefile = open("starwars.frames.old","r+")
@@ -38,14 +39,6 @@ class event:
     def __init__(self, evtype):
         self.evtype = evtype # 0 for packet generation, 1 for packet sent
         
-
-
-
-
-
-
-
-
 
 while True:
     # Get imminent 
