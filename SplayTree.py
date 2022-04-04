@@ -145,7 +145,7 @@ class SplayTree(BSTree):
         a new Node with key attribute key and value attribute
         value into T and _rotates it to the root of T.
         """
-        if not isinstance(key,(int,long,float)):
+        if not isinstance(key,(int,float)):
             raise TypeError(str(key) + " is not a number")
         else:
             if not self.Root:

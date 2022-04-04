@@ -30,15 +30,11 @@ def frametype(frm_num):
 
 accumu_packets = np.cumsum([int(item/1024) for item in traces])
 
-
-class packet:
-    def __init__(self, pktno):
-        self.pktno = pktno
-
-class event:
-    def __init__(self, evtype):
-        self.evtype = evtype # 0 for packet generation, 1 for packet sent
-        
+# Determine the generation time for each frame
+num_frms = len(traces)
+frame_spawn = np.zeros(num_frms) + 42
+frame_spawn[0] = 0
+frame_spawn_time = np.cumsum(segment_spawn)
 
 while True:
     # Get imminent 
