@@ -12,21 +12,22 @@ import logging
 #from SplayTree import *
 
 # set logger
-logger = logging.getLogger("arq-simulator")
-logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger("arq-simulator")
+# logger.setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 # create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+# ch = logging.StreamHandler()
+# ch.setLevel(logging.DEBUG)
 
 # create formatter
-formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# formatter = logging.Formatter(
+#     '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # add formatter to ch
-ch.setFormatter(formatter)
+# ch.setFormatter(formatter)
 
 # add ch to logger
-logger.addHandler(ch)
+# logger.addHandler(ch)
 
 
 # read the tracefile
@@ -102,7 +103,7 @@ while True:
     try:
         evnt = event_list.get_nowait()
     except queue.Empty:
-        logger.debug("No events any more")
+        logging.debug("No events any more")
         break
     else:
         if evnt.type == 0:
@@ -147,14 +148,14 @@ while True:
             drp_rate = 0.25 * drp_rate + np.random.uniform(0, 0.05) * 0.75
             if lost:
                 # if packet is lost, an timeout event is generated
-                evnt.set_time = t + 2*one_trip
-                evnt.set_type = 1
+                evnt.set_time(t + 2*one_trip)
+                evnt.set_type(1)
                 event_list.put_nowait(evnt)
 
             else:
                 # determine the arrival time
-                evnt.set_time = t + one_trip
-                evnt.set_type = 2
+                evnt.set_time(t + one_trip)
+                evnt.set_type(2)
                 event_list.put_nowait(evnt)
 
         elif evnt.type == 2:
@@ -162,8 +163,8 @@ while True:
             t = evnt.time
             one_trip = np.random.uniform(60, 90)
             # send ACK
-            evnt.set_type = 3
-            evnt.set_time = t + one_trip
+            evnt.set_type(3)
+            evnt.set_time(t + one_trip)
             event_list.put_nowait(evnt)
 
             # receive packets that are not expired
