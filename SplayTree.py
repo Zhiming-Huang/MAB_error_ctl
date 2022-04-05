@@ -22,11 +22,14 @@ import bstree
 Node = bstree.Node
 BSTree = bstree.BSTree
 
+
 class SplayNode(Node):
     """Represents a node of a Splay Tree"""
-    def __init__(self,key,value):
+
+    def __init__(self, key, value):
         """Initializes a BST Node to represent a Splay Node"""
-        Node.__init__(self,key,value)
+        Node.__init__(self, key, value)
+
 
 class SplayTree(BSTree):
     """
@@ -47,9 +50,10 @@ class SplayTree(BSTree):
 
     For further explanation of some functions or their source code, see bstree.py.
     """
-    def __init__(self,*args):
+
+    def __init__(self, *args):
         """Initialzes tree the same as as BST"""
-        BSTree.__init__(self,*args)
+        BSTree.__init__(self, *args)
 
     def is_valid(self, *args):
         """
@@ -67,59 +71,63 @@ class SplayTree(BSTree):
 
         if node.left:
             if not node.left.parent == node:
-                raise Exception("Left child of node " + str(node.key) + " is adopted by another node!")
+                raise Exception("Left child of node " +
+                                str(node.key) + " is adopted by another node!")
 
         if node.right:
             if not node.right.parent == node:
-                raise Exception("Right child of node " + str(node.key) + " is adopted by another node!")
+                raise Exception("Right child of node " +
+                                str(node.key) + " is adopted by another node!")
 
         if node.parent and node.parent.left == node:
             if node.key > node.parent.key:
-                raise Exception("Node " + str(node.key) + " is to the left of " + str(node.parent.key) + " but is larger")
+                raise Exception("Node " + str(node.key) + " is to the left of " +
+                                str(node.parent.key) + " but is larger")
 
         if node.parent and node.parent.right == node:
             if node.key < node.parent.key:
-                raise Exception("Node " + str(node.key) + " is to the right of " + str(node.parent.key) + " but is smaller")
+                raise Exception("Node " + str(node.key) + " is to the right of " +
+                                str(node.parent.key) + " but is smaller")
 
         return (self.is_valid(node.left) and self.is_valid(node.right))
 
-    def preorder(self,*args):
+    def preorder(self, *args):
         """
         T.preorder(...) -> Sequence. Produces a sequence of the Nodes
         in T, obtained in preorder.
         """
-        return BSTree.preorder(self,*args)
+        return BSTree.preorder(self, *args)
 
-    def inorder(self,*args):
+    def inorder(self, *args):
         """
         T.inorder(...) -> Sequence. Produces a sequence of the Nodes
         in T, obtained in inorder.
         """
-        return BSTree.inorder(self,*args)
+        return BSTree.inorder(self, *args)
 
-    def postorder(self,*args):
+    def postorder(self, *args):
         """
         T.postorder(...) -> Sequence. Produces a sequence of the Nodes
         in T, obtained in postorder.
         """
-        return BSTree.postorder(self,*args)
+        return BSTree.postorder(self, *args)
 
-    def levelorder(self):
+    def levelorder(self, *args):
         """
         T.levelorder(...) -> Sequence. Produces a sequence of the Nodes
         in T, obtained in levelorder.
         """
-        return BSTree.levelorder(self,*args)
+        return BSTree.levelorder(self, *args)
 
-    def _get_node_without_splaying(self,key,*args):
+    def _get_node_without_splaying(self, key, *args):
         """
         T.get_node(key,...) -> Node. Produces the Node in T with key
         attribute key without rotating it to the root of T.
         If there is no such Node, produces None.
         """
-        return BSTree.get_node(self,key,*args)
+        return BSTree.get_node(self, key, *args)
 
-    def get_node(self,key,*args):
+    def get_node(self, key, *args):
         """
         T.get_node(key,...) -> Node. Produces the Node in T with key
         attribute key and _rotates it to the root of T.
@@ -135,26 +143,26 @@ class SplayTree(BSTree):
             self._rotate_to_root(start)
             return start
         elif key > start.key:
-            return self.get_node(key,start.right)
+            return self.get_node(key, start.right)
         else:
-            return self.get_node(key,start.left)
+            return self.get_node(key, start.left)
 
-    def insert(self,key,value,*args):
+    def insert(self, key, value, *args):
         """
         T.insert(key,value...) <==> T[key] = value. Inserts
         a new Node with key attribute key and value attribute
         value into T and _rotates it to the root of T.
         """
-        if not isinstance(key,(int,float)):
+        if not isinstance(key, (int, float)):
             raise TypeError(str(key) + " is not a number")
         else:
             if not self.Root:
-                self.Root = Node(key,value)
+                self.Root = Node(key, value)
             elif len(args) == 0:
                 if not self._get_node_without_splaying(key, self.Root):
-                    self.insert(key,value,self.Root)
+                    self.insert(key, value, self.Root)
             else:
-                child = Node(key,value)
+                child = Node(key, value)
                 parent = args[0]
                 if child.key > parent.key:
                     if not parent.right:
@@ -162,52 +170,52 @@ class SplayTree(BSTree):
                         child.parent = parent
                         self._rotate_to_root(child)
                     else:
-                        self.insert(key,value,parent.right)
+                        self.insert(key, value, parent.right)
                 else:
                     if not parent.left:
                         parent.left = child
                         child.parent = parent
                         self._rotate_to_root(child)
                     else:
-                        self.insert(key,value,parent.left)
+                        self.insert(key, value, parent.left)
 
-    def insert_from(self,seq):
+    def insert_from(self, seq):
         """
         T.insert_from(seq). For every key, value pair in seq,
         inserts a new Node into T with key and value attributes
         as given.
         """
-        BSTree.insert_from(self,seq)
+        BSTree.insert_from(self, seq)
 
-    def get_max(self,*args):
+    def get_max(self, *args):
         """
         T.get_max(...) -> Node. Produces the Node that has the maximum
         key attribute in T.
         """
-        return BSTree.get_max(self,*args)
+        return BSTree.get_max(self, *args)
 
-    def get_min(self,*args):
+    def get_min(self, *args):
         """
         T.get_min(...) -> Node. Produces the Node that has the minimum
         key attribute in T.
         """
-        return BSTree.get_min(self,*args)
+        return BSTree.get_min(self, *args)
 
-    def get_element_count(self,*args):
+    def get_element_count(self, *args):
         """
         T.get_element_count(...) -> Nat. Produces the number of elements
         in T.
         """
-        return BSTree.get_element_count(self,*args)
+        return BSTree.get_element_count(self, *args)
 
-    def get_height(self,*args):
+    def get_height(self, *args):
         """
         T.get_height(...) -> Nat. Produces the height of T, defined
         as one added to the height of the tallest subtree.
         """
-        return BSTree.get_height(self,*args)
+        return BSTree.get_height(self, *args)
 
-    def _rotate_left(self,pivot):
+    def _rotate_left(self, pivot):
         """
         T.__rotate_left(pivot). Performs a left tree rotation in T
         around the Node pivot.
@@ -235,7 +243,7 @@ class SplayTree(BSTree):
                 par_node.left = new_root
                 new_root.parent = par_node
 
-    def _rotate_right(self,pivot):
+    def _rotate_right(self, pivot):
         """
         T.__rotate_right(pivot). Performs a right tree rotation in T
         around the Node pivot.
@@ -264,7 +272,7 @@ class SplayTree(BSTree):
                 par_node.left = new_root
                 new_root.parent = par_node
 
-    def _rotate_to_root(self,node):
+    def _rotate_to_root(self, node):
         """
         T._rotate_to_root(node). Uses appropriate tree rotations
         to _rotate (splay) node to the root of T.
@@ -298,7 +306,7 @@ class SplayTree(BSTree):
 
             self._rotate_to_root(node)
 
-    def _delete_leaf(self,node):
+    def _delete_leaf(self, node):
         """
         T.__delete_leaf_parent(node). Deletes node from T, treating it
         as a Node with only one child.
@@ -316,7 +324,7 @@ class SplayTree(BSTree):
         else:
             self.Root = None
 
-    def _delete_leaf_parent(self,node):
+    def _delete_leaf_parent(self, node):
         """
         T.__delete_leaf_parent(node). Deletes node from T, treating it
         as a Node with only one child.
@@ -354,21 +362,21 @@ class SplayTree(BSTree):
 
         del node
 
-    def _switch_nodes(self,node1,node2):
+    def _switch_nodes(self, node1, node2):
         """
         T.__switch_nodes(node1,node2). Switches positions
         of node1 and node2 in T.
         """
-        BSTree._switch_nodes(self,node1,node2)
+        BSTree._switch_nodes(self, node1, node2)
 
-    def _delete_node(self,node):
+    def _delete_node(self, node):
         """
         T.__delete_node(node). Deletes node from T, treating it as
         a Node with two children.
         """
         if self.get_height(node.left) > self.get_height(node.right):
             to_switch = self.get_max(node.left)
-            self._switch_nodes(node,to_switch)
+            self._switch_nodes(node, to_switch)
 
             if not (to_switch.right or to_switch.left):
                 to_delete = self.get_max(node.left)
@@ -378,7 +386,7 @@ class SplayTree(BSTree):
                 self._delete_leaf_parent(to_delete)
         else:
             to_switch = self.get_min(node.right)
-            self._switch_nodes(node,to_switch)
+            self._switch_nodes(node, to_switch)
 
             if not (to_switch.right or to_switch.left):
                 to_delete = self.get_min(node.right)
@@ -387,11 +395,11 @@ class SplayTree(BSTree):
                 to_delete = self.get_min(node.right)
                 self._delete_leaf_parent(to_delete)
 
-    def delete(self,key):
+    def delete(self, key):
         """T.delete(key) <==> del T[key]. Deletes the Node
         with key attribute key from T.
         """
-        node = self._get_node_without_splaying(key,self.Root)
+        node = self._get_node_without_splaying(key, self.Root)
         parent = node.parent
 
         if node:
@@ -407,12 +415,12 @@ class SplayTree(BSTree):
             if parent:
                 self._rotate_to_root(parent)
 
-    def delete_from(self,seq):
+    def delete_from(self, seq):
         """
         T.delete_from(seq). For every keyin seq, deletes
         the Node with that key attribute from T.
         """
-        if isinstance(seq,collections.Iterable):
+        if isinstance(seq, collections.Iterable):
             for x in seq:
                 self.delete(x)
         else:
