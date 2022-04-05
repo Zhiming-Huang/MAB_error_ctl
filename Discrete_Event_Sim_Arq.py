@@ -127,7 +127,7 @@ while True:
                 one_trip = np.random.uniform(one_trip_min, one_trip_max)
 
                 # determine pkt importance:
-                frm_id = np.where(accumu_packets >= S_next)[0][0]
+                frm_id = np.where(accumu_packets >= S_next+1)[0][0]
                 pkt_imp = frametype(frm_id+1)
 
                 # determine whether the packet is lost or not
