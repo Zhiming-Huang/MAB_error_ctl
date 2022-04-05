@@ -68,7 +68,8 @@ class event:
         self.time = evt_time
 
 
-accumu_packets = np.cumsum([int(item/1024) for item in traces])
+pkts_per_frm = np.array([int(item/1024) for item in traces])
+accumu_packets = np.cumsum(pkts_per_frm)
 
 # Determine the generation time for each frame
 num_frms = len(traces)
@@ -86,11 +87,15 @@ S_base = 0
 S_next = 0
 
 R_packets = np.zeros(num_frms)
+R_packets2 = np.zeros(accumu_packets[-1])
 ACKed_pkts = queue.PriorityQueue()
 
 drp_rate = 0.01
 max_pkt_no = 0
 delay_req = 180
+one_trip_min = 20
+one_trip_max = 30
+
 
 t = 0
 ind = 0
@@ -119,11 +124,11 @@ while True:
             while S_next < S_base + snd_wnd:
                 if S_next >= max_pkt_no:
                     break
-                one_trip = np.random.uniform(60, 90)
+                one_trip = np.random.uniform(one_trip_min, one_trip_max)
 
                 # determine pkt importance:
-                frm_id = np.where(accumu_packets >= S_next)[0][0] + 1
-                pkt_imp = frametype(frm_id)
+                frm_id = np.where(accumu_packets >= S_next)[0][0]
+                pkt_imp = frametype(frm_id+1)
 
                 # determine whether the packet is lost or not
                 lost = np.random.binomial(1, drp_rate)
@@ -137,14 +142,14 @@ while True:
                 else:
                     # determine the arrival time
                     event_list.put_nowait(
-                        event(t + one_trip, 1, S_next, pkt_imp, t + delay_req, frm_id))
+                        event(t + one_trip, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 S_next += 1
 
         elif evnt.type == 1:
             # if packet lost and timeout, retransmit packet
             t = evnt.time
             lost = np.random.binomial(1, drp_rate)
-            one_trip = np.random.uniform(60, 90)
+            one_trip = np.random.uniform(one_trip_min, one_trip_max)
             drp_rate = 0.25 * drp_rate + np.random.uniform(0, 0.05) * 0.75
             if lost:
                 # if packet is lost, an timeout event is generated
@@ -161,7 +166,7 @@ while True:
         elif evnt.type == 2:
             # if packet is successfully received
             t = evnt.time
-            one_trip = np.random.uniform(60, 90)
+            one_trip = np.random.uniform(one_trip_min, one_trip_max)
             # send ACK
             evnt.set_type(3)
             evnt.set_time(t + one_trip)
@@ -169,9 +174,9 @@ while True:
 
             # receive packets that are not expired
             frm_id = evnt.frm_id
-            if t >= evnt.delay_req:
+            if t <= evnt.delay_req:
                 R_packets[frm_id] += 1
-
+                R_packets2[evnt.pk_no] += 1
         else:
             # receive an ack
             t = evnt.time
