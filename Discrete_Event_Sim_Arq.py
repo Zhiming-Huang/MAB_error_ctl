@@ -176,7 +176,7 @@ while True:
             frm_id = evnt.frm_id
             if t <= evnt.delay_req:
                 R_packets[frm_id] += 1
-                R_packets2[evnt.pk_no] += 1
+                R_packets2[evnt.pkt_no] += 1
         else:
             # receive an ack
             t = evnt.time
