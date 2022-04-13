@@ -89,10 +89,11 @@ S_next = 0
 R_packets = np.zeros(num_frms)
 R_packets2 = np.zeros(accumu_packets[-1])
 ACKed_pkts = queue.PriorityQueue()
+expired_pkts = []
 
 drp_rate = 0.01
 max_pkt_no = 0
-delay_req = 180
+delay_req = 180000
 one_trip_min = 20
 one_trip_max = 30
 
@@ -118,7 +119,10 @@ while True:
             # Schedule next arrival event
             ind += 1
             if ind < num_frms:
-                event_list.put_nowait(arrival_events[ind])
+                try:
+                    event_list.put_nowait(arrival_events[ind])
+                except queue.Full:
+                    print("Queue is full")
 
             # Send packets
             while S_next < S_base + snd_wnd:
@@ -177,6 +181,8 @@ while True:
             if t <= evnt.delay_req:
                 R_packets[frm_id] += 1
                 R_packets2[evnt.pkt_no] += 1
+            else:
+                expired_pkts.append(evnt.pkt_no)
         else:
             # receive an ack
             t = evnt.time
