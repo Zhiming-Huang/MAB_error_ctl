@@ -72,7 +72,8 @@ class event:
         self.snd_time = snd_time
 
 
-pkts_per_frm = np.array([int(item/1024) for item in traces])
+pkt_size = 1000  # 1000 bytes per packet
+pkts_per_frm = np.array([int(item/(pkt_size)) for item in traces])
 accumu_packets = np.cumsum(pkts_per_frm)
 
 # Determine the generation time for each frame
@@ -87,6 +88,7 @@ for i in range(num_frms):
 
 # sending window control
 snd_wnd = 5
+redun_pkt_no = 1
 S_base = 0
 S_next = 0
 
@@ -100,7 +102,6 @@ max_pkt_no = 0
 delay_req = 1800
 one_trip_min = 60
 one_trip_max = 80
-
 
 # retran RCF6298 https://www.saminiir.com/lets-code-tcp-ip-stack-5-tcp-retransmission/
 srtt = 2*one_trip_max  # smoothed round-trip time
@@ -124,7 +125,7 @@ while True:
         break
     else:
         if evnt.type == 0:
-            # if packts arrive
+            # if a frame is generated
             t = evnt.time
             max_pkt_no = accumu_packets[evnt.frm_id]
             # Schedule next arrival event
@@ -136,7 +137,9 @@ while True:
                     print("Queue is full")
 
             # Send packets
-            while S_next < S_base + snd_wnd:
+            lost_pkt_no = 0
+            lost_pkt_
+            while S_next < S_base + snd_wnd - redun_pkt_no:
                 if S_next >= max_pkt_no:
                     break
                 one_trip = np.random.uniform(one_trip_min, one_trip_max)
@@ -149,16 +152,17 @@ while True:
                 lost = np.random.binomial(1, drp_rate)
                 drp_rate = 0.25 * drp_rate + np.random.uniform(0, 0.05) * 0.75
 
-                if lost:
-                    # if packet is lost, an timeout event is generated
-                    event_list.put_nowait(
-                        event(t + rto, t, 1, S_next, pkt_imp, t + delay_req, frm_id))
-
-                else:
-                    # determine the arrival time
-                    event_list.put_nowait(
-                        event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 S_next += 1
+                if lost:
+                    lost_pkt_no += 1
+                # else:
+                # # determine the arrival time
+                #     event_list.put_nowait(
+                #         event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
+                #
+            redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)
+
+            if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no:
 
         elif evnt.type == 1:
             # if packet lost and timeout, retransmit packet

@@ -72,9 +72,9 @@ class event:
         self.snd_time = snd_time
 
 
-pkts_per_frm = np.array([int(item/1024) for item in traces])
+pkt_size = 1000  # 1000 bytes per packet
+pkts_per_frm = np.array([int(item/(pkt_size)) for item in traces])
 accumu_packets = np.cumsum(pkts_per_frm)
-
 # Determine the generation time for each frame
 num_frms = len(traces)
 frame_spawn = np.zeros(num_frms) + 42
