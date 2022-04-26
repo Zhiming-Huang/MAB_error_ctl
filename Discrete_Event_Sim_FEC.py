@@ -140,7 +140,6 @@ while True:
                 except queue.Full:
                     print("Queue is full")
 
-                
             while S_next < S_base + snd_wnd - redun_pkt_no:
                 if S_next >= max_pkt_no:
                     break
@@ -154,35 +153,35 @@ while True:
                 lost = np.random.binomial(1, drp_rate)
                 drp_rate = 0.25 * drp_rate + np.random.uniform(0, 0.05) * 0.75
 
-                
                 if lost:
                     lost_pkt_no += 1
                     lost_pkt.put_nowait(
                         event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 else:
-                # determine the arrival time
+                    # determine the arrival time
                     event_list.put_nowait(
                         event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 #
                 S_next += 1
 
             if S_next % 5 == 0 and S_next > 0:
-                redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)     
+                redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)
                 if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no:
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
-                        one_trip = np.random.uniform(one_trip_min, one_trip_max)
+                        one_trip = np.random.uniform(
+                            one_trip_min, one_trip_max)
                         pkt_evnt.set_time(t+one_trip)
                         event_list.put_nowait(pkt_evnt)
                 else:
-                    #generate timeout events
+                    # generate timeout events
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
                         pkt_evnt.set_type(1)
                         event_list.put_nowait(pkt_evnt)
                 lost_pkt_no = 0
                 lost_pkt = queue.Queue()
-                
+
         elif evnt.type == 1:
             # if packet lost and timeout, move window
             pkt_no = evnt.pkt_no
@@ -202,39 +201,34 @@ while True:
                 lost = np.random.binomial(1, drp_rate)
                 drp_rate = 0.25 * drp_rate + np.random.uniform(0, 0.05) * 0.75
 
-                
                 if lost:
                     lost_pkt_no += 1
                     lost_pkt.put_nowait(
                         event(t + 2*one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 else:
-                # determine the arrival time
+                    # determine the arrival time
                     event_list.put_nowait(
                         event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 #
                 S_next += 1
 
-            if S_next >= 47900:
-                a = 1
-
             if S_next % 5 == 0 and S_next > 0:
-                redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)     
+                redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)
                 if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no:
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
-                        one_trip = np.random.uniform(one_trip_min, one_trip_max)
+                        one_trip = np.random.uniform(
+                            one_trip_min, one_trip_max)
                         pkt_evnt.set_time(t+one_trip)
                         event_list.put_nowait(pkt_evnt)
                 else:
-                    #generate timeout events
+                    # generate timeout events
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
                         pkt_evnt.set_type(1)
                         event_list.put_nowait(pkt_evnt)
                 lost_pkt_no = 0
                 lost_pkt = queue.Queue()
-
-            
 
         elif evnt.type == 2:
             # if packet is successfully received
@@ -265,7 +259,7 @@ while True:
                 S_base = pkt_no
 
                 # uodate S_base if pkt_no == S_base
-              
+
                 # else put back the pkt_no if pkt_no > S_base
                 # Send packets
             while S_next < S_base + snd_wnd - redun_pkt_no:
@@ -281,31 +275,31 @@ while True:
                 lost = np.random.binomial(1, drp_rate)
                 drp_rate = 0.25 * drp_rate + np.random.uniform(0, 0.05) * 0.75
 
-                
                 if lost:
                     lost_pkt_no += 1
                     lost_pkt.put_nowait(
                         event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 else:
-                # determine the arrival time
+                    # determine the arrival time
                     event_list.put_nowait(
                         event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 #
                 S_next += 1
 
-            # if S_next >= 47900:
-            #     a = 1
+            if S_next >= 17010:
+                a = 1
 
             if S_next % 5 == 0 and S_next > 0:
-                redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)     
+                redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)
                 if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no:
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
-                        one_trip = np.random.uniform(one_trip_min, one_trip_max)
+                        one_trip = np.random.uniform(
+                            one_trip_min, one_trip_max)
                         pkt_evnt.set_time(t+one_trip)
                         event_list.put_nowait(pkt_evnt)
                 else:
-                    #generate timeout events
+                    # generate timeout events
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
                         pkt_evnt.set_type(1)
