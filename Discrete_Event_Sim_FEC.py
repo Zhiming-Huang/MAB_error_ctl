@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.DEBUG)
 # add ch to logger
 # logger.addHandler(ch)
 
-np.random.seed(seed=0)
+# np.random.seed(seed=0)
 # read the tracefile
 tracefile = open("starwars.frames.old", "r+")
 traces = tracefile.read().splitlines()[0:10000]
@@ -99,7 +99,7 @@ expired_pkts = []
 
 drp_rate = 0.01
 max_pkt_no = 0
-delay_req = 1800
+delay_req = 180
 one_trip_min = 60
 one_trip_max = 80
 
@@ -113,7 +113,7 @@ beta = 0.25
 lost_pkt_no = 0
 lost_pkt = queue.Queue()
 
-
+fail_flag = False
 t = 0
 ind = 0
 event_list = queue.PriorityQueue()
@@ -125,8 +125,17 @@ while True:
     try:
         evnt = event_list.get_nowait()
     except queue.Empty:
-        logging.debug("No events any more")
-        break
+        if not lost_pkt.empty():
+            for i in range(lost_pkt_no):
+                pkt_evnt = lost_pkt.get_nowait()
+                pkt_evnt.set_type(1)
+                event_list.put_nowait(pkt_evnt)
+            lost_pkt_no = 0
+            lost_pkt = queue.Queue()
+            fail_flag = True
+
+        else:
+            break
     else:
         if evnt.type == 0:
             # if a frame is generated
@@ -184,7 +193,7 @@ while True:
                 lost_pkt = queue.Queue()
                 
         elif evnt.type == 1:
-            # if packet lost and timeout, move window
+            # if packet lost and timeout, move snd window
             pkt_no = evnt.pkt_no
             if pkt_no >= S_base:
                 S_base = pkt_no
@@ -214,8 +223,8 @@ while True:
                 #
                 S_next += 1
 
-            if S_next >= 47900:
-                a = 1
+            # if S_next >= 47900:
+            #     a = 1
 
             if S_next % 5 == 0 and S_next > 0:
                 redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)     
@@ -293,12 +302,13 @@ while True:
                 #
                 S_next += 1
 
-            # if S_next >= 47900:
+            # if S_next >= 17010:
             #     a = 1
-
+            
+            
             if S_next % 5 == 0 and S_next > 0:
                 redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)     
-                if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no:
+                if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no and not fail_flag:
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
                         one_trip = np.random.uniform(one_trip_min, one_trip_max)

@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 
 pkts_per_frm_perc = R_packets / pkts_per_frm
 
-plt.plot(pkts_per_frm_perc[0:1000])
-
-plt.xlabel("Frames")
-plt.ylabel("Frame Completeness")
-
-
-plt.savefig("frame_averaged_reward.eps", format="eps")
+#plt.boxplot(pkts_per_frm_perc[0:1000])
+plt.hist(pkts_per_frm_perc)
+plt.xlabel("Frame Completeness")
+plt.ylabel("Frame Number")
 
 
-plt.legend(["MAB", "ARQ", "FEC"])
+#plt.savefig("frame_averaged_reward.eps", format="eps")
+
+
+#plt.legend(["MAB", "ARQ", "FEC"])

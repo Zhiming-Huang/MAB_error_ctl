@@ -29,7 +29,6 @@ logging.basicConfig(level=logging.DEBUG)
 # add ch to logger
 # logger.addHandler(ch)
 
-
 # read the tracefile
 tracefile = open("starwars.frames.old", "r+")
 traces = tracefile.read().splitlines()[0:10000]
@@ -97,7 +96,7 @@ expired_pkts = []
 
 drp_rate = 0.01
 max_pkt_no = 0
-delay_req = 1800
+delay_req = 180
 one_trip_min = 60
 one_trip_max = 80
 
