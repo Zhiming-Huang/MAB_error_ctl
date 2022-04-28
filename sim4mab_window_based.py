@@ -21,7 +21,7 @@ def frametype(frm_num):
 
 
 # RTT =  150 assume one trip time is 75ms, and round trip time is 150ms
-num_seg = 171000
+num_seg = 10000
 
 drp_rate = np.zeros(num_seg)
 drp_rate[0] = 0.01
@@ -204,7 +204,8 @@ while i != num_seg:
         delayReq = seg_spawn_time[item] + delay_req_perseg - t
         delay = rtt * retrxsfori - rtt / 2
         delay_packet1[item] = delay
-        mabctl.input_context(delayReq, packet_imp, seg_buffer[item:].size, snd_wnd)
+        mabctl.input_context(delayReq, packet_imp,
+                             seg_buffer[item:].size, snd_wnd)
         action1 = mabctl.exp3_action()
         reward1, delay1, ifdrop = reward_observed(
             action1, rtt, drp_rate, delayReq, packet_imp, retrxsfori, fecscssfori

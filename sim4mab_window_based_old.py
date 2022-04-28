@@ -164,7 +164,7 @@ for i in range(num_seg):
     if action1 == 1:
         reward_fec[i] = reward1
         delay_packet2[i] = rtt / 2
-        packet2_receipt[i] = 1 if not ifdrop1 else 0
+        packet2_receipt[i] = 0.98 if not ifdrop1 else 0
 
     else:
         delay_packet2[i] = rtt / 2
@@ -172,7 +172,7 @@ for i in range(num_seg):
 
             reward_fec[i] = 0
         else:
-            reward_fec[i] = 1
+            reward_fec[i] = 0.98
             packet2_receipt[i] = 1
 
 
