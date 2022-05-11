@@ -66,6 +66,7 @@ class event:
         self.type = evt_type
 
     def set_time(self, evt_time):
+        # set event time
         self.time = evt_time
 
     def set_sndtime(self, snd_time):
@@ -165,7 +166,7 @@ while True:
                 if lost:
                     lost_pkt_no += 1
                     lost_pkt.put_nowait(
-                        event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
+                        event(t, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 else:
                     # determine the arrival time
                     event_list.put_nowait(
@@ -173,7 +174,7 @@ while True:
                 #
                 S_next += 1
 
-            if S_next % 5 == 0 and S_next > 0:
+            if S_next % (snd_wnd - redun_pkt_no) == 0 and S_next > 0:
                 redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)
                 if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no:
                     for i in range(lost_pkt_no):
@@ -187,6 +188,7 @@ while True:
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
                         pkt_evnt.set_type(1)
+                        pkt_evnt.set_time(t+rto)
                         event_list.put_nowait(pkt_evnt)
                 lost_pkt_no = 0
                 lost_pkt = queue.Queue()
@@ -213,7 +215,7 @@ while True:
                 if lost:
                     lost_pkt_no += 1
                     lost_pkt.put_nowait(
-                        event(t + 2*one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
+                        event(t, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 else:
                     # determine the arrival time
                     event_list.put_nowait(
@@ -224,7 +226,7 @@ while True:
             # if S_next >= 47900:
             #     a = 1
 
-            if S_next % 5 == 0 and S_next > 0:
+            if S_next % (snd_wnd - redun_pkt_no) == 0 and S_next > 0:
                 redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)
                 if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no:
                     for i in range(lost_pkt_no):
@@ -238,6 +240,7 @@ while True:
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
                         pkt_evnt.set_type(1)
+                        pkt_evnt.set_time(t+rto)
                         event_list.put_nowait(pkt_evnt)
                 lost_pkt_no = 0
                 lost_pkt = queue.Queue()
@@ -290,7 +293,7 @@ while True:
                 if lost:
                     lost_pkt_no += 1
                     lost_pkt.put_nowait(
-                        event(t + one_trip, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
+                        event(t, t, 2, S_next, pkt_imp, t + delay_req, frm_id))
                 else:
                     # determine the arrival time
                     event_list.put_nowait(
@@ -300,11 +303,10 @@ while True:
 
             # if S_next >= 17010:
             #     a = 1
-            
-            
-            if S_next % 5 == 0 and S_next > 0:
-                redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)     
-                if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no and not fail_flag:
+
+            if S_next % (snd_wnd - redun_pkt_no) == 0 and S_next > 0:
+                redun_pkt_lost_no = np.random.binomial(redun_pkt_no, drp_rate)
+                if lost_pkt_no + redun_pkt_lost_no <= redun_pkt_no:
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
                         one_trip = np.random.uniform(
@@ -316,6 +318,7 @@ while True:
                     for i in range(lost_pkt_no):
                         pkt_evnt = lost_pkt.get_nowait()
                         pkt_evnt.set_type(1)
+                        pkt_evnt.set_time(t+rto)
                         event_list.put_nowait(pkt_evnt)
                 lost_pkt_no = 0
                 lost_pkt = queue.Queue()
